@@ -1,62 +1,78 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
-import { useAuth } from "../context/AuthContext";
+import Layout from "../components/Layout";
+import { STATUS_META } from "../lib/status";
 
 export default function Dashboard() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const { logout } = useAuth();
 
   useEffect(() => {
     api
       .get("/applications/")
       .then((res) => setApplications(res.data))
-      .catch(() => setError("Failed to load applications"))
+      .catch(() => setError("Couldn't load your applications."))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="p-8">Loading...</p>;
-  if (error) return <p className="p-8 text-red-600">{error}</p>;
-
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Your Applications</h1>
-        <button onClick={logout} className="text-sm text-red-600">
-          Log out
-        </button>
+    <Layout>
+      <div className="flex items-center justify-between mb-10">
+        <div>
+          <h1 className="font-serif text-3xl">Your applications</h1>
+          <p className="text-muted mt-1">
+            {applications.length === 0
+              ? "Nothing logged yet."
+              : `${applications.length} application${applications.length === 1 ? "" : "s"} on record.`}
+          </p>
+        </div>
+        <Link
+          to="/applications/new"
+          className="bg-accent text-paper text-sm px-4 py-2.5 rounded-sm hover:bg-accent-hover transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+        >
+          Add application
+        </Link>
       </div>
 
-      <Link
-        to="/applications/new"
-        className="inline-block mb-6 bg-blue-600 text-white rounded px-4 py-2"
-      >
-        + Add Application
-      </Link>
+      {loading && <p className="text-muted">Loading…</p>}
+      {error && <p className="text-status-rejected">{error}</p>}
 
-      {applications.length === 0 ? (
-        <p className="text-gray-500">No applications yet.</p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {applications.map((app) => (
-            <Link
-              key={app.id}
-              to={`/applications/${app.id}`}
-              className="border rounded p-4 flex justify-between items-center hover:bg-gray-50"
-            >
-              <div>
-                <p className="font-semibold">{app.role_title}</p>
-                <p className="text-gray-600 text-sm">{app.company}</p>
-              </div>
-              <span className="text-xs px-2 py-1 rounded bg-gray-200 capitalize">
-                {app.status.replace("_", " ")}
-              </span>
-            </Link>
-          ))}
+      {!loading && !error && applications.length === 0 && (
+        <div className="border border-dashed border-line rounded-sm p-10 text-center">
+          <p className="text-muted">
+            Every application starts here. Add the first one to begin your
+            record.
+          </p>
         </div>
       )}
-    </div>
+
+      {!loading && applications.length > 0 && (
+        <div className="divide-y divide-line border-t border-b border-line">
+          {applications.map((app) => {
+            const meta = STATUS_META[app.status];
+            return (
+              <Link
+                key={app.id}
+                to={`/applications/${app.id}`}
+                className="flex items-center justify-between py-4 group"
+              >
+                <div>
+                  <p className="font-medium group-hover:text-accent transition-colors">
+                    {app.role_title}
+                  </p>
+                  <p className="text-sm text-muted">{app.company}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${meta.color}`} />
+                  <span className="text-sm text-muted">{meta.label}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </Layout>
   );
 }

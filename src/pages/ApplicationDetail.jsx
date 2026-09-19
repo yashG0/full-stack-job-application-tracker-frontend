@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
+import Layout from "../components/Layout";
+import { STATUS_META } from "../lib/status";
 
 const STATUSES = ["applied", "phone_screen", "interview", "offer", "rejected"];
 
@@ -18,61 +20,114 @@ export default function ApplicationDetail() {
 
   async function handleStatusChange(newStatus) {
     try {
-      const res = await api.patch(`/applications/${id}/`, { status: newStatus });
+      const res = await api.patch(`/applications/${id}/`, {
+        status: newStatus,
+      });
       setApplication(res.data);
       const historyRes = await api.get(`/applications/${id}/history/`);
       setHistory(historyRes.data);
     } catch {
-      setError("Failed to update status");
+      setError("Couldn't update the status.");
     }
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this application?")) return;
+    if (!confirm("Remove this application from your record?")) return;
     await api.delete(`/applications/${id}/`);
     navigate("/dashboard");
   }
 
-  if (!application) return <p className="p-8">Loading...</p>;
+  if (!application) {
+    return (
+      <Layout>
+        <p className="text-muted">Loading…</p>
+      </Layout>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-2xl font-bold">{application.role_title}</h1>
-      <p className="text-gray-600 mb-6">{application.company}</p>
+    <Layout>
+      <Link
+        to="/dashboard"
+        className="text-sm text-muted hover:text-ink transition-colors"
+      >
+        ← Back to your applications
+      </Link>
 
-      <div className="mb-6">
-        <label className="text-sm font-medium">Status</label>
-        <select
-          value={application.status}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          className="border rounded px-3 py-2 block mt-1"
-        >
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s.replace("_", " ")}
-            </option>
-          ))}
-        </select>
-        {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+      <div className="mt-4 mb-10">
+        <h1 className="font-serif text-3xl">{application.role_title}</h1>
+        <p className="text-muted mt-1">{application.company}</p>
       </div>
 
-      <div className="mb-6">
-        <h2 className="font-semibold mb-2">History</h2>
-        <div className="flex flex-col gap-2">
-          {history.map((h) => (
-            <div key={h.id} className="text-sm text-gray-600">
-              {h.old_status || "created"} → {h.new_status}{" "}
-              <span className="text-gray-400">
-                ({new Date(h.changed_at).toLocaleString()})
-              </span>
+      <div className="grid sm:grid-cols-[1fr_1.2fr] gap-12">
+        <div>
+          <label className="flex flex-col gap-1.5 mb-8">
+            <span className="text-sm text-muted">Status</span>
+            <select
+              value={application.status}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
+            >
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_META[s].label}
+                </option>
+              ))}
+            </select>
+            {error && (
+              <span className="text-status-rejected text-sm">{error}</span>
+            )}
+          </label>
+
+          {application.job_url && (
+            <a
+              href={application.job_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-accent hover:text-accent-hover transition-colors block mb-8"
+            >
+              View job posting
+            </a>
+          )}
+
+          <button
+            onClick={handleDelete}
+            className="text-sm text-muted hover:text-status-rejected transition-colors"
+          >
+            Remove application
+          </button>
+        </div>
+
+        <div>
+          <h2 className="text-sm text-muted mb-4">History</h2>
+          <div className="relative pl-5">
+            <div className="absolute left-[3px] top-1 bottom-1 w-px bg-line" />
+            <div className="flex flex-col gap-6">
+              {history.map((h) => {
+                const meta = STATUS_META[h.new_status];
+                return (
+                  <div key={h.id} className="relative">
+                    <span
+                      className={`absolute -left-5 top-1 w-[7px] h-[7px] rounded-full ${meta?.color || "bg-status-applied"}`}
+                    />
+                    <p className="text-sm">
+                      {h.old_status
+                        ? `Moved to ${meta.label}`
+                        : `Logged as ${meta.label}`}
+                    </p>
+                    <p className="text-xs text-muted mt-0.5">
+                      {new Date(h.changed_at).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
         </div>
       </div>
-
-      <button onClick={handleDelete} className="text-sm text-red-600">
-        Delete application
-      </button>
-    </div>
+    </Layout>
   );
 }

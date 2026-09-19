@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
+import Layout from "../components/Layout";
 
 export default function NewApplication() {
   const [company, setCompany] = useState("");
@@ -21,53 +22,71 @@ export default function NewApplication() {
         applied_date: appliedDate,
       });
       navigate("/dashboard");
-    } catch (err) {
-      setError("Failed to create application");
+    } catch {
+      setError(
+        "Couldn't save this application. Check the fields and try again.",
+      );
     }
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-16 p-6">
-      <h1 className="text-2xl font-bold mb-6">Add Application</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          placeholder="Company"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          className="border rounded px-3 py-2"
-          required
-        />
-        <input
-          type="text"
-          placeholder="Role title"
-          value={roleTitle}
-          onChange={(e) => setRoleTitle(e.target.value)}
-          className="border rounded px-3 py-2"
-          required
-        />
-        <input
-          type="url"
-          placeholder="Job URL (optional)"
-          value={jobUrl}
-          onChange={(e) => setJobUrl(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-        <input
-          type="date"
-          value={appliedDate}
-          onChange={(e) => setAppliedDate(e.target.value)}
-          className="border rounded px-3 py-2"
-          required
-        />
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+    <Layout>
+      <Link
+        to="/dashboard"
+        className="text-sm text-muted hover:text-ink transition-colors"
+      >
+        ← Back to your applications
+      </Link>
+      <h1 className="font-serif text-3xl mt-4 mb-8">Add an application</h1>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-md">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted">Company</span>
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
+            required
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted">Role</span>
+          <input
+            type="text"
+            value={roleTitle}
+            onChange={(e) => setRoleTitle(e.target.value)}
+            className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
+            required
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted">Job posting URL (optional)</span>
+          <input
+            type="url"
+            value={jobUrl}
+            onChange={(e) => setJobUrl(e.target.value)}
+            className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
+          />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted">Date applied</span>
+          <input
+            type="date"
+            value={appliedDate}
+            onChange={(e) => setAppliedDate(e.target.value)}
+            className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
+            required
+          />
+        </label>
+        {error && <p className="text-status-rejected text-sm">{error}</p>}
         <button
           type="submit"
-          className="bg-blue-600 text-white rounded px-3 py-2 hover:bg-blue-700"
+          className="bg-accent text-paper px-4 py-2.5 rounded-sm hover:bg-accent-hover transition-colors self-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         >
-          Add
+          Save application
         </button>
       </form>
-    </div>
+    </Layout>
   );
 }

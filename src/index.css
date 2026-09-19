@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+    --font-sans: "Inter", sans-serif;
+    --font-serif: "Fraunces", serif;
+
+    --color-paper: #f4f5f0;
+    --color-ink: #1e2a24;
+    --color-accent: #2f6f5e;
+    --color-accent-hover: #24564a;
+    --color-line: #dad9d0;
+    --color-muted: #6b7268;
+
+    --color-status-applied: #8b8578;
+    --color-status-phone: #b4872b;
+    --color-status-interview: #2f6f5e;
+    --color-status-offer: #1f7a4d;
+    --color-status-rejected: #a24b3f;
+}
