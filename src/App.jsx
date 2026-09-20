@@ -5,10 +5,12 @@ import Dashboard from "./pages/Dashboard";
 import NewApplication from "./pages/NewApplication";
 import ApplicationDetail from "./pages/ApplicationDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Landing from "./pages/Landing";
 
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route
