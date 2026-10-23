@@ -1,84 +1,13 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
+import Brand from "../components/Brand";
+
+function AuthAside() { return <aside className="auth-aside"><Brand /><div className="auth-aside-copy"><p className="eyebrow"><span className="eyebrow-line" />A CLEARER JOB SEARCH</p><h2>One place for every <em>possibility.</em></h2><p>Start with the role you just applied for. Keep each next step, conversation, and update together.</p></div><span className="auth-aside-foot">Private to you. Ready when you are.</span></aside>; }
 
 export default function Signup() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [username, setUsername] = useState(""); const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [error, setError] = useState(""); const [submitting, setSubmitting] = useState(false); const navigate = useNavigate();
+  async function handleSubmit(e) { e.preventDefault(); setError(""); setSubmitting(true); try { await api.post("/auth/register/", { username, email, password }); navigate("/login"); } catch (err) { const data = err.response?.data; setError(data ? Object.values(data).flat().join(" ") : "Something went wrong. Please try again."); } finally { setSubmitting(false); } }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    try {
-      await api.post("/auth/register/", { username, email, password });
-      navigate("/login");
-    } catch (err) {
-      const data = err.response?.data;
-      setError(
-        data ? Object.values(data).flat().join(" ") : "Something went wrong.",
-      );
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-paper text-ink font-sans flex items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <h1 className="font-serif text-4xl text-center mb-1">Ledger</h1>
-        <p className="text-muted text-center mb-10">Start your record.</p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm text-muted">Username</span>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
-              required
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm text-muted">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
-              required
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-sm text-muted">Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border border-line rounded-sm px-3 py-2 bg-paper focus:outline-none focus:border-accent"
-              required
-            />
-          </label>
-          {error && <p className="text-status-rejected text-sm">{error}</p>}
-          <button
-            type="submit"
-            className="bg-accent text-paper px-4 py-2.5 rounded-sm hover:bg-accent-hover transition-colors mt-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-          >
-            Create account
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-muted mt-8">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-accent hover:text-accent-hover transition-colors"
-          >
-            Log in
-          </Link>
-        </p>
-      </div>
-    </div>
-  );
+  return <div className="ledger-app auth-page"><AuthAside /><main className="auth-main"><div className="auth-form-wrap"><Brand className="auth-mobile-brand" /><p className="eyebrow"><span className="eyebrow-line" />YOUR SEARCH, IN GOOD ORDER</p><h1>Start your record.</h1><p>A few details, then you’re ready to go.</p><form onSubmit={handleSubmit} className="auth-form"><label className="field"><span className="field-label">Username</span><input type="text" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required /></label><label className="field"><span className="field-label">Email address</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label className="field"><span className="field-label">Password</span><input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required /><span className="form-hint">Choose a password you don’t use elsewhere.</span></label>{error && <div className="auth-error" role="alert">{error}</div>}<button type="submit" disabled={submitting} className="button button-primary auth-submit">{submitting ? "Creating account…" : "Create your account"}<span aria-hidden="true">→</span></button></form><p className="auth-switch">Already have a Ledger account? <Link to="/login">Log in</Link></p></div></main></div>;
 }
