@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from "react";
-import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
@@ -9,6 +8,7 @@ export function AuthProvider({ children }) {
   );
 
   async function login(username, password) {
+    const { default: api } = await import("../api/axios");
     const res = await api.post("/auth/login/", { username, password });
     localStorage.setItem("access_token", res.data.access);
     localStorage.setItem("refresh_token", res.data.refresh);
