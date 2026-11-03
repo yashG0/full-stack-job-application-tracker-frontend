@@ -1,89 +1,108 @@
-# Job Application Tracker — Frontend
+# Ledger — Job Application Tracker
 
-A React single-page app for tracking job applications, consuming the
-[Django REST API backend](../backend). Built with Vite, Tailwind CSS, and
-`react-router-dom`.
+A calmer way to keep your job search in order. Ledger brings applications, current statuses, and status history together in one focused workspace.
 
-## Features
+**Live app:** [jobtracker.yashgaurkar.me](https://jobtracker.yashgaurkar.me)
 
-- **JWT-based auth** — signup and login, with the access token persisted in
-  `localStorage` and attached automatically to every API request via an
-  Axios interceptor
-- **Protected routes** — the dashboard and application pages redirect to
-  `/login` if the user isn't authenticated
-- **Application dashboard** — view all of your applications at a glance,
-  with company, role, and current status
-- **Application detail view** — update an application's status and see its
-  full status-change history, timestamped
+## What you can do
 
-## Tech Stack
+- Create an account and sign in with JWT authentication.
+- Add applications with a company, role, application date, and optional job posting link.
+- Review applications in a dashboard with status totals and quick filters.
+- Update an application’s status, review its timestamped history, or remove it.
+- Use a responsive interface designed for desktop and mobile screens.
 
-| Layer | Technology |
+### Application statuses
+
+**Applied · Phone screen · Interview · Offer · Rejected**
+
+## Screens and routes
+
+| Route | Screen | Access |
+|---|---|---|
+| `/` | Product landing page | Public |
+| `/signup` | Create an account | Public |
+| `/login` | Sign in | Public |
+| `/dashboard` | Application overview and status filters | Signed in |
+| `/applications/new` | Add an application | Signed in |
+| `/applications/:id` | Application details, status updates, and history | Signed in |
+
+Signed-in routes redirect to `/login` when there is no saved access token. An unauthorized API response clears saved tokens and returns the user to the login screen.
+
+## Built with
+
+| Area | Technology |
 |---|---|
-| Framework | React (Vite) |
-| Styling | Tailwind CSS v4 |
-| Routing | `react-router-dom` |
-| HTTP client | Axios |
-| Package management | [Bun](https://bun.sh) |
+| UI | React 19 |
+| Language | JavaScript (ES modules) |
+| Build tool | Vite 8 |
+| Styling | Tailwind CSS 4 |
+| Routing | React Router 7 |
+| API requests | Axios |
+| Package manager | [Bun](https://bun.sh) |
 | Linting | oxlint |
 
-## Pages
+## Run locally
 
-| Route | Description | Protected |
-|---|---|---|
-| `/signup` | Create a new account | No |
-| `/login` | Log in, receive JWT | No |
-| `/dashboard` | List of the logged-in user's applications | Yes |
-| `/applications/new` | Form to add a new application | Yes |
-| `/applications/:id` | Application detail — status update + history | Yes |
-
-## Getting Started
-
-### Prerequisites
+### Requirements
 
 - [Bun](https://bun.sh)
-- The backend API running locally at `http://localhost:8000` (see the
-  [backend README](../backend/README.md))
+- The [Django REST API](https://github.com/yashG0/full-stack-job-application-tracker) running locally at `http://localhost:8000`
 
-### Setup
+### Start the frontend
 
-1. Install dependencies
-   ```bash
-   bun install
-   ```
+```bash
+bun install
+bun run dev
+```
 
-2. Start the dev server
-   ```bash
-   bun run dev
-   ```
+Open [http://localhost:5173](http://localhost:5173). The backend runs separately; see its [setup instructions](https://github.com/yashG0/full-stack-job-application-tracker#run-locally).
 
-3. Open `http://localhost:5173`
+### Quality checks
 
-The API base URL is currently hardcoded to `http://localhost:8000/api` in
-`src/api/axios.js` — update this if pointing at a deployed backend.
+```bash
+bun run lint
+bun run build
+```
 
-## Architecture Notes
+## Frontend structure
 
-- **`src/api/axios.js`** — a shared Axios instance with a request
-  interceptor that automatically attaches the JWT from `localStorage` to
-  every outgoing request, so individual components never handle auth
-  headers manually.
-- **`src/context/AuthContext.jsx`** — holds login state and exposes
-  `login()`/`logout()` via React Context, avoiding prop-drilling auth state
-  through every component.
-- **`src/components/ProtectedRoute.jsx`** — wraps any route that requires
-  authentication; redirects to `/login` if no valid session exists.
+```text
+src/
+├── api/axios.js                 # Shared Axios client and auth interceptors
+├── components/
+│   ├── Brand.jsx                # Ledger logo and wordmark
+│   ├── Layout.jsx               # Signed-in application shell
+│   └── ProtectedRoute.jsx       # Signed-in route guard
+├── context/AuthContext.jsx      # Login state and logout actions
+├── lib/status.js                # Application status labels and styles
+├── pages/
+│   ├── Landing.jsx
+│   ├── Login.jsx
+│   ├── Signup.jsx
+│   ├── Dashboard.jsx
+│   ├── NewApplication.jsx
+│   └── ApplicationDetail.jsx
+├── App.jsx                      # Route definitions and lazy page loading
+└── index.css                    # Tailwind entry point and shared styles
+```
 
-## Known Limitations
+The shared Axios client attaches the access token from browser `localStorage` to API requests. The authentication context handles sign-in and sign-out, and the protected-route component guards the dashboard and application screens.
 
-- No UI for the backend's Contact endpoints yet — the API supports
-  attaching recruiter/referral contacts to an application, but this
-  frontend doesn't expose that yet.
-- No token refresh handling — when the access token expires, the user is
-  simply logged out rather than silently refreshed via the refresh token.
-- State management is intentionally simple (`useState` + Context) given the
-  app's scope — no Redux or similar, by design.
+## API configuration
 
-## License
+The API base URL is read from `VITE_API_URL` at build time. If it is not set, the frontend falls back to `http://localhost:8000/api`.
 
-MIT
+For a deployed API, configure the frontend environment with its base URL, for example:
+
+```env
+VITE_API_URL=https://api.yashgaurkar.me/api
+```
+
+The frontend and backend are separate applications and both must be available for sign-in and application data to work.
+
+## Current scope
+
+- The backend supports recruiter and referral contacts, but the frontend does not yet have a contacts screen.
+- Access-token refresh is not implemented in the frontend. When an access token expires, the user is asked to sign in again.
+- Authentication tokens are stored in browser `localStorage`.
